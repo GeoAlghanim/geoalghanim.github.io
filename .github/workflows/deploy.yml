@@ -35,6 +35,8 @@ jobs:
     environment: github-pages
     steps:
       - uses: actions/deploy-pages@v4
+        with:
+          timeout: 180000
       - name: Remove build artifact
         if: always()
         env:
