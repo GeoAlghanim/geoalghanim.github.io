@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: GeoAlghanim/wafa-vl47
+          repository: GeoAlghanim/wafa-vl47-files
           ssh-key: ${{ secrets.SITE_KEY }}
           persist-credentials: false
           path: src
@@ -21,7 +21,6 @@ jobs:
           cp -r src/. out/wafa-vl47/
           rm -rf out/wafa-vl47/.git out/wafa-vl47/robots.txt
           printf 'User-agent: *\nDisallow: /\n' > out/robots.txt
-          cp -r out/wafa-vl47 out/check
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out
