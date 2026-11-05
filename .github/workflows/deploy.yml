@@ -1,0 +1,45 @@
+name: deploy
+on: workflow_dispatch
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: GeoAlghanim/wafa-vl47
+          ssh-key: ${{ secrets.SITE_KEY }}
+          persist-credentials: false
+          path: src
+      - name: Assemble site
+        run: |
+          mkdir -p out/wafa-vl47
+          cp -r src/. out/wafa-vl47/
+          rm -rf out/wafa-vl47/.git out/wafa-vl47/robots.txt
+          printf 'User-agent: *\nDisallow: /\n' > out/robots.txt
+          cp -r out/wafa-vl47 out/check
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+          retention-days: 1
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+      actions: write
+    environment: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4
+      - name: Remove build artifact
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '.artifacts[].id' |
+            xargs -r -I{} gh api -X DELETE "repos/$GITHUB_REPOSITORY/actions/artifacts/{}"
